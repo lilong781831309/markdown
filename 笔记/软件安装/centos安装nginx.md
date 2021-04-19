@@ -119,10 +119,10 @@ cd /opt/src/nginx-1.18.0
 
 
 ​    
-    参数说明:
-    --user                              指定程序运行时的非特权用户
-    --group                             指定程序运行时的非特权用户组
-    --prefix                            安装目录
+​    参数说明:
+​    --user                              指定程序运行时的非特权用户
+​    --group                             指定程序运行时的非特权用户组
+​    --prefix                            安装目录
 
 ### 5.3、报错处理  
 
@@ -189,7 +189,7 @@ cd /opt/src/nginx-1.18.0
   解决方法
 
   ```shell
-  yum install geoip-devel
+  yum -y install geoip-devel
   ```
 
   
@@ -203,7 +203,7 @@ cd /opt/src/nginx-1.18.0
   解决方法
 
   ```shell
-  yum install gperftools
+  yum -y install gperftools
   ```
 
   

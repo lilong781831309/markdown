@@ -2,7 +2,7 @@
 
 ## 1、FileInputStream、FileOutputStream
 
-``` 
+``` java
     public static String fileInputStream(File file) {
         StringBuilder sb = new StringBuilder();
         FileInputStream fis = null;
@@ -29,7 +29,7 @@
         return sb.toString();
     }
 ```
-```
+```java
     public static void fileOutputStream(File file) {
         FileOutputStream fos = null;
         try {
@@ -53,7 +53,7 @@
 ```
 ***
 ## 2、BufferedInputStream、BufferedOutputStream
-``` 
+``` java
     public static String bufferedInputStream(File file) {
         StringBuilder sb = new StringBuilder();
         BufferedInputStream bis = null;
@@ -80,7 +80,7 @@
         return sb.toString();
     }
 ```
-```
+```java
     public static void bufferedOutputStream(File file) {
         BufferedOutputStream bos = null;
         try {
@@ -104,7 +104,7 @@
 ```
 ***
 ## 3、DataInputStream、DataOutputStream
-```
+```java
     public static void dataInputStream(File file) {
         DataInputStream dis = null;
         try {
@@ -133,7 +133,7 @@
         }
     }
 ```
-```
+```java
     public static void dataOutputStream(File file) {
         DataOutputStream dos = null;
         try {
@@ -164,7 +164,7 @@
 ```
 ***
 ## 4、ObjectInputStream、ObjectOutputStream
-```
+```java
     public static void objectInputStream(File file) {
         ObjectInputStream ois = null;
         try {
@@ -264,7 +264,7 @@
 ```
 ***
 ## 5、PushbackInputStream、PushbackReader
-```
+```java
     public static void pushbackInputStream() {
         String data = "This an example of PushbackInputStream";
         ByteArrayInputStream byteArrayInputStream = null;
@@ -297,11 +297,11 @@
         }
     }
 ```
-```
+```java
     T
     This an example of PushbackInputStream
 ```
-```
+```java
     public static void pushbackReader() {
         String data = "示例 pushbackReade";
         CharArrayReader charArrayReader = null;
@@ -340,7 +340,7 @@
 ```
 ***
 ## 6、PipedInputStream、PipedOutputStream
-```
+```java
     public static void main(String[] args) throws IOException {
         PipedInputStream pis = new PipedInputStream();
         PipedOutputStream pos = new PipedOutputStream();
@@ -411,7 +411,7 @@
 ```
 ***
 ## 7、SequenceInputStream
-```
+```java
     public static void sequenceInputStream(File srcFile1, File srcFile2, File targetFile) {
         SequenceInputStream sis = null;
         FileOutputStream fos = null;
@@ -449,7 +449,7 @@
 ```
 ***
 ## 8、ByteArrayInputStream、ByteArrayOutputStream
-```
+```java
     public static void byteArrayInputStream() {
         byte[] buf = {1, 2, 3, 'a', 'b', 'c'};
         ByteArrayInputStream bais = new ByteArrayInputStream(buf);
@@ -469,7 +469,7 @@
     98
     99
 ```
-```
+```java
     public static void byteArrayOutputStream() {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         baos.write(1);
@@ -496,7 +496,7 @@
 ```
 ***
 ## 9、FileReader、FileWriter
-```
+```java
     public static void fileReader(File file) {
         // 使用文件名称创建流对象
         FileReader fr = null;
@@ -528,7 +528,7 @@
     b
     c
 ```
-```
+```java
     public static void fileWriter(File file) {
         FileWriter fw = null;
         try {
@@ -557,7 +557,7 @@
 ```
 ***
 ## 10、BufferedReader、BufferedWriter
-```
+```java
     public static void bufferedReader(File file) {
         // 使用文件名称创建流对象
         BufferedReader br = null;
@@ -587,7 +587,7 @@
     第二行
     第三行
 ```
-```
+```java
     public static void bufferedWriter(File file) {
         BufferedWriter bw = null;
         try {
@@ -616,7 +616,7 @@
 ```
 ***
 ## 11、InputStreamReader、OutputStreamWriter
-```
+```java
     public static void inputStreamReader() {
         InputStreamReader isr = null;
         InputStreamReader isr2 = null;
@@ -659,7 +659,7 @@
         }
     }
 ```
-```
+```java
     public static void outputStreamWriter() {
         OutputStreamWriter osw = null;
         OutputStreamWriter osw2 = null;
@@ -697,13 +697,13 @@
 ### 12.1、StringReader
 `使用情景:`
 > `必须使用一个Reader来作为参数传递时，但你的数据源又仅仅是一个String类型数据`
-```
+```java
 StringReader sr = new StringReader("just a test~")
 ```
 
 ### 12.2、StringWriter
 `使用场景一：必须使用一个Writer来作为参数传递时`
-```
+```java
     public static void stringWriter() {
         StringWriter sw = new StringWriter();
         sw.write(1);
@@ -716,7 +716,7 @@ StringReader sr = new StringReader("just a test~")
     }
 ```
 `使用场景二：将堆栈跟踪转换为 String`
-```
+```java
     public static void stringWriter() {
         try {
             int a = 1 / 0;
@@ -730,7 +730,7 @@ StringReader sr = new StringReader("just a test~")
 ```
 ***
 ## 13、PipedReader、PipedWriter
-```
+```java
     public static void main(String[] args) throws IOException {
         PipedReader pr = new PipedReader();
         PipedWriter pw = new PipedWriter();
@@ -803,7 +803,7 @@ StringReader sr = new StringReader("just a test~")
 
 ***
 ## 14、CharArrayReader、CharArrayWriter
-```
+```java
     public static void charArrayReader() {
         // 使用文件名称创建流对象
         CharArrayReader car = null;
@@ -836,7 +836,7 @@ StringReader sr = new StringReader("just a test~")
     l
     o
 ```
-```
+```java
     public static void charArrayWriter() {
         CharArrayWriter caw = new CharArrayWriter();
         caw.write('a');
@@ -854,7 +854,7 @@ StringReader sr = new StringReader("just a test~")
 ```
 ***
 ## 15、PrintStream、PrintWriter
-```
+```java
     public static void main(String[] args) throws IOException {
         PrintStream ps = new PrintStream(new FileOutputStream("C:\\ps.txt"));
         System.setOut(ps);
@@ -872,7 +872,7 @@ StringReader sr = new StringReader("just a test~")
 ***
 
 ## 16、RandomAccessFile
-```
+```java
     public static final int KB = 1024;
     public static final int MB = KB * KB;
 
@@ -930,7 +930,7 @@ StringReader sr = new StringReader("just a test~")
 ```
 示例代码：
 
-```
+```java
 	public void test() {
 		try(
 			FileInputStream fis = new FileInputStream("d:/1.txt");

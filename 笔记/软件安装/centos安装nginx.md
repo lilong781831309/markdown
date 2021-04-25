@@ -15,9 +15,6 @@ yum -y install perl libxml2 libxml2-devel libxslt libxslt-devel gd gd-devel perl
 
 ```shell
 groupadd nginx
-```
-
-```shell
 useradd nginx -g nginx -s /sbin/nologin -M
 ```
 
@@ -31,25 +28,11 @@ useradd nginx -g nginx -s /sbin/nologin -M
 
 ```shell
 wget -O /opt/software/pcre-8.32.tar.gz https://ftp.pcre.org/pub/pcre/pcre-8.32.tar.gz
-```
-
-```shell
-tar -zxvf pcre-8.32.tar.gz -C /opt/src/
-```
-
-```shell
 wget -O /opt/software/zlib-1.2.7.3.tar.gz http://www.zlib.net/fossils/zlib-1.2.7.3.tar.gz
-```
-
-```shell
-tar -zxvf zlib-1.2.7.3.tar.gz -C /opt/src/
-```
-
-```shell
 wget -O /opt/software/openssl-1.0.2k.tar.gz https://www.openssl.org/source/old/1.0.2/openssl-1.0.2k.tar.gz
-```
 
-```shell
+tar -zxvf pcre-8.32.tar.gz -C /opt/src/
+tar -zxvf zlib-1.2.7.3.tar.gz -C /opt/src/
 tar -zxvf openssl-1.0.2k.tar.gz -C /opt/src/
 ```
 
@@ -57,13 +40,7 @@ tar -zxvf openssl-1.0.2k.tar.gz -C /opt/src/
 
 ```shell
 wget -O /opt/software/nginx-1.18.0.tar.gz https://nginx.org/download/nginx-1.18.0.tar.gz
-```
-
-```shell
 tar -zxvf nginx-1.18.0.tar.gz -C /opt/src/
-```
-
-```shell
 cd /opt/src/nginx-1.18.0
 ```
 
@@ -212,21 +189,15 @@ cd /opt/src/nginx-1.18.0
 
 ```shell
 make -j4
-```
-
-```shell
 make install
-```
-
-```shell
 make clean
-```
-
-```shell
 ln -s /opt/module/nginx-1.18.0 /opt/module/nginx
 ```
 
+
+
 ## 7、配置文件
+
 ```shell
 vim /opt/module/nginx/conf/nginx.conf
 ```
@@ -298,13 +269,13 @@ http {
 
 ```shell
 cd /opt/module/nginx/sbin
-```
-
-```shell
 ./nginx -t
 ```
 
+
+
  ## 9、开机启动
+
 ```shell
 vim /lib/systemd/system/nginx.service
 ```

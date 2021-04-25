@@ -10,13 +10,7 @@ wget -O /opt/software/nexus-3.30.0-01-unix.tar.gz https://www.sonatype.com/produ
 
 ```shell
 cd /opt/software
-```
-
-```shell
 mkdir -p /opt/module/nexus
-```
-
-```shell
 tar -zxvf nexus-3.30.0-01-unix.tar.gz -C /opt/module/nexus/
 ```
 
@@ -24,13 +18,7 @@ tar -zxvf nexus-3.30.0-01-unix.tar.gz -C /opt/module/nexus/
 
 ```shell
 cd /opt/module/nexus/nexus-3.30.0-01/bin
-```
-
-```shell
 cp nexus.vmoptions nexus.vmoptions.bak
-```
-
-```shell
 vim nexus.vmoptions
 ```
 
@@ -56,9 +44,6 @@ nexus-context-path=/nexus/
 
 ```shell
 groupadd nexus
-```
-
-```shell
 useradd nexus -g nexus -s /sbin/nologin -M
 ```
 

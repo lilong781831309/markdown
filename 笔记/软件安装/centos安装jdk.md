@@ -18,13 +18,7 @@ wget -O /opt/software/jdk-8u281.tar.gz https://download.oracle.com/otn/java/jdk/
 ## 2、解压
 ```shell
 cd /opt/software
-```
-
-```shell
 mkdir -p /opt/module/java
-```
-
-```shell
 tar -zxvf jdk-8u131-linux-x64.tar.gz -C /opt/module/java
 ```
 
@@ -40,15 +34,10 @@ vim /etc/profile.d/java.sh
     export JRE_HOME=$JAVA_HOME/jre
     export CLASSPATH=.:$JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar
     export PATH=$JAVA_HOME/bin:$PATH
-重新加载
+重新加载、测试
 
 ```shell
 source /etc/profile
-```
-
-测试
-
-```shell
 java -version
 ```
 

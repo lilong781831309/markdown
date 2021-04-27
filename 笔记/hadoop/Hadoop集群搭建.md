@@ -261,6 +261,39 @@ export YARN_NODEMANAGER_USER=lilong
         <value>hadoop16:9868</value>
     </property>
     
+    <!-- 白名单 -->
+	<property>
+		<name>dfs.hosts</name>
+		<value>/opt/module/hadoop-3.1.4/etc/hadoop/whitelist</value>
+	</property>
+	<!-- 黑名单 -->
+	<property>
+		<name>dfs.hosts.exclude</name>
+		<value>/opt/module/hadoop-3.1.4/etc/hadoop/blacklist</value>
+	</property>
+
+    <!-- 异构存储 -->
+    <property>
+        <name>dfs.datanode.data.dir</name>
+        <value>[RAM_DISK]/opt/module/hadoop-3.1.4/data/data/ram,[SSD]file:///opt/module/hadoop-3.1.4/data/data/ssd,[DISK]file:///opt/module/hadoop-3.1.4/data/data/disk,[ARCHIVE]file:///opt/module/hadoop-3.1.4/data/data/archive</value>
+        <description>DataNode存储名称空间和事务日志的本地文件系统上的路径</description>
+    </property>
+
+    <property>
+        <name>dfs.datanode.max.locked.memory</name>
+        <value>2147483648</value>
+    </property>
+
+    <!-- 短路本地读取 -->
+    <property>
+        <name>dfs.client.read.shortcircuit</name>
+        <value>true</value>
+    </property>
+    <property>
+        <name>dfs.domain.socket.path</name>
+        <value>/var/lib/hadoop-hdfs/dn_socket</value>
+    </property>
+
 </configuration>
 ```
 

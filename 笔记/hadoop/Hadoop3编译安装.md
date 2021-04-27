@@ -274,6 +274,17 @@ mkdir -p /opt/software
               <value>hadoop16:9868</value>
           </property>
           
+              <!-- 白名单 -->
+      	<property>
+      		<name>dfs.hosts</name>
+      		<value>/opt/module/hadoop-3.1.4/etc/hadoop/whitelist</value>
+      	</property>
+      	<!-- 黑名单 -->
+      	<property>
+      		<name>dfs.hosts.exclude</name>
+      		<value>/opt/module/hadoop-3.1.4/etc/hadoop/blacklist</value>
+      	</property>
+          
       </configuration>
       ```
 
@@ -464,6 +475,8 @@ mkdir -p /opt/software
      xsync $HADOOP_HOME/etc/hadoop/yarn-site.xml
      xsync $HADOOP_HOME/etc/hadoop/mapred-site.xml
      xsync $HADOOP_HOME/etc/hadoop/workers
+     xsync $HADOOP_HOME/etc/hadoop/whitelist
+     xsync $HADOOP_HOME/etc/hadoop/blacklist
      ```
 
      

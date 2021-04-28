@@ -324,6 +324,7 @@ WantedBy=multi-user.target  可设置为多用户
 systemctl 命令使用
 
 ```shell
+systemctl daemon-reload                 刷新服务   
 systemctl enable nginx.service          设置开机自启动
 systemctl disable nginx.service         停止开机自启动
 systemctl start nginx.service　         启动nginx服务

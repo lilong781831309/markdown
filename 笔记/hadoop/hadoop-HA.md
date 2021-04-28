@@ -215,6 +215,16 @@ export YARN_NODEMANAGER_USER=lilong
 
 
 
+#### workers
+
+```shell
+hadoop10
+hadoop14
+hadoop16
+```
+
+
+
 #### core-site.xml
 
 ```xml
@@ -499,45 +509,32 @@ export YARN_NODEMANAGER_USER=lilong
 
 
 
-#### 启动journalnode
+#### 初始化namenode
 
 ```shell
+#启动journalnode
 [lilong@hadoop10 ~]$ hdfs --daemon start journalnode
 [lilong@hadoop14 ~]$ hdfs --daemon start journalnode
 [lilong@hadoop16 ~]$ hdfs --daemon start journalnode
-```
 
-
-
-#### 启动namenode
-
-```shell
 #在[nn10]上，对其进行格式化，并启动
 [lilong@hadoop10 ~]$ hdfs namenode -format
 [lilong@hadoop10 ~]$ hdfs --daemon start namenode
 
-#在[nn14]和[nn16]上，同步nn10的元数据信息
+#在[nn14]和[nn16]上，同步nn1的元数据信息
 [lilong@hadoop14 ~]$ hdfs namenode -bootstrapStandby
 [lilong@hadoop16 ~]$ hdfs namenode -bootstrapStandby
 
-#启动[nn14]和[nn16]
-[lilong@hadoop14 ~]$ hdfs --daemon start namenode
-[lilong@hadoop16 ~]$ hdfs --daemon start namenode
-
-#将[nn10]切换为Active
-[lilong@hadoop10 ~]$ hdfs haadmin -transitionToActive nn10
-#查看是否Active
-[lilong@hadoop10 ~]$ hdfs haadmin -getServiceState nn10
+#闭所有hdfs服务
+[lilong@hadoop10 ~]$ stop-dfs.sh
 ```
 
 
 
-#### 启动datanode
+#### 启动hdfs
 
 ```shell
-[lilong@hadoop10 ~]$ hdfs --daemon start datanode
-[lilong@hadoop14 ~]$ hdfs --daemon start datanode
-[lilong@hadoop16 ~]$ hdfs --daemon start datanode
+[lilong@hadoop10 ~]$ start-dfs.sh
 ```
 
 
@@ -545,11 +542,27 @@ export YARN_NODEMANAGER_USER=lilong
 #### 启动yarn
 
 ```shell
-[lilong@hadoop14 ~]$ start-yarn.sh
+[lilong@hadoop10 ~]$ start-yarn.sh
 ```
 
 查看yarn服务状态
 
 ```shell
-[lilong@hadoop14 ~]$ yarn rmadmin -getServiceState rm14
+[lilong@hadoop10 ~]$ yarn rmadmin -getServiceState rm10
 ```
+
+
+
+#### 重启
+
+```shell
+[lilong@hadoop10 ~]$ sudo reboot
+[lilong@hadoop10 ~]$ /opt/module/zookeeper-3.5.7/bin/zkServer.sh start
+[lilong@hadoop10 ~]$ hdfs --daemon start journalnode
+[lilong@hadoop10 ~]$ hdfs --daemon start zkfc
+[lilong@hadoop10 ~]$ hdfs --daemon start namenode
+[lilong@hadoop10 ~]$ hdfs --daemon start datanode
+[lilong@hadoop10 ~]$ yarn --daemon start resourcemanager
+[lilong@hadoop10 ~]$ yarn --daemon start nodemanager
+```
+

@@ -64,10 +64,9 @@ default-storage-engine=INNODB
 #### 以管理员的身份打开cmd
 
 - 跳转路径到 D:\develop\mysql\mysql-8.0.11-winx64\bin
-
 - 初始化命令   `mysqld --initialize --user=mysql --console`   ==记下初始密码==
 - 添加服务       ` mysqld -install`
 - 启动服务       `net start mysql`
 - 登录               `mysql -u root -p`                 ==输入初始密码==
 - 修改密码       `ALTER USER root@localhost IDENTIFIED BY '123456'; `
-
+- 修改密码       `ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '123456';`

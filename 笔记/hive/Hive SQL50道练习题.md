@@ -347,6 +347,29 @@ select student.* from student
   where tmp.s_id is null;
 ```
 
+```sql
+SELECT a.* 
+FROM student a
+LEFT JOIN (
+  SELECT s_id FROM score WHERE c_id IN (SELECT c_id FROM course WHERE t_id = (SELECT t_id FROM teacher WHERE t_name = '张三'))
+)b
+ON a.s_id = b.s_id
+WHERE b.s_id IS NULL
+```
+
+```sql
+SELECT a.* 
+FROM student a
+LEFT JOIN (
+  SELECT s_id FROM score c
+  JOIN course d ON c.c_id = d.c_id
+  JOIN teacher e ON d.t_id = e.t_id 
+  WHERE e.t_name = "张三"
+)b
+ON a.s_id = b.s_id
+WHERE b.s_id IS NULL
+```
+
 
 
 #### 15、查询两门及其以上不及格课程的同学的学号，姓名及其平均成绩 

@@ -484,7 +484,36 @@ union all select tmp3.* from
     order by s_score asc limit 2;
 ```
 
- 
+ ```sql
+SELECT a.*,b.c_id,b.s_score,b.rank
+FROM student a
+JOIN
+  (
+  SELECT score.*,IF(@p=c_id,@r:=@r+1,@r:=1) AS 'rank',@p:=c_id
+  FROM score
+  JOIN (SELECT @p:=NULL,@r:=0)t
+  ORDER BY c_id,s_score DESC
+  )b
+ON a.s_id = b.s_id
+WHERE b.rank BETWEEN 2 AND 3
+ORDER BY b.c_id,b.rank
+ ```
+
+```sql
+SELECT *
+FROM
+  (
+  SELECT a.*,b.c_id,b.s_score,rank() over w AS 'rank'
+  FROM student a
+  RIGHT JOIN score b
+  ON a.s_id = b.s_id
+  WINDOW w AS (PARTITION BY c_id ORDER BY b.c_id,b.s_score DESC,a.s_id)
+  ORDER BY b.c_id,'rank'
+)t
+WHERE t.rank BETWEEN 2 AND 3
+```
+
+
 
 #### 23、统计各科成绩各分数段人数：课程编号,课程名称,[100-85],[85-70],[70-60],[0-60]及所占百分比
 

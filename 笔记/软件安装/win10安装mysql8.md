@@ -12,6 +12,14 @@ D:\develop\mysql\mysql-8.0.11-winx64
 
 
 
+#### 删除旧服务
+
+- 停止服务       `net stop mysql`
+
+- 删除服务       `mysqld --remove mysql`
+
+  
+
 #### 配置环境变量
 
 - 添加环境变量  
@@ -62,6 +70,8 @@ default-storage-engine=INNODB
 
 
 #### 以管理员的身份打开cmd
+
+mysqld --remove mysql 
 
 - 跳转路径到 D:\develop\mysql\mysql-8.0.11-winx64\bin
 - 初始化命令   `mysqld --initialize --user=mysql --console`   ==记下初始密码==

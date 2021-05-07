@@ -128,6 +128,21 @@ FROM student a
 LEFT JOIN score b ON a.s_id = b.s_id AND b.c_id = '01'
 LEFT JOIN score c ON a.s_id = c.s_id AND c.c_id = '02'
 WHERE b.s_score IS NOT NULL AND (c.s_score IS NULL OR b.s_score > c.s_score)
+################################
+SELECT a.* , IFNULL(b.s_score,0) score1, IFNULL(c.s_score,0) score2
+FROM student a
+LEFT JOIN score b ON a.s_id = b.s_id AND b.c_id = '01'
+LEFT JOIN score c ON a.s_id = c.s_id AND c.c_id = '02'
+WHERE IFNULL(b.s_score,0) > IFNULL(c.s_score,0)
+################################
+SELECT 
+  b.*,
+  IFNULL(MAX(CASE WHEN a.c_id='01' THEN a.s_score END),0) AS s01,
+  IFNULL(MAX(CASE WHEN a.c_id='02' THEN a.s_score END),0) AS s02
+FROM score a
+RIGHT JOIN student b ON a.s_id = b.s_id
+GROUP BY a.s_id
+HAVING s01 > s02
 ```
 
 
@@ -157,6 +172,21 @@ FROM student a
 LEFT JOIN score b ON a.s_id = b.s_id AND b.c_id = '01'
 LEFT JOIN score c ON a.s_id = c.s_id AND c.c_id = '02'
 WHERE c.s_score IS NOT NULL AND (b.s_score IS NULL OR b.s_score < c.s_score)
+################################
+SELECT a.* , IFNULL(b.s_score,0) score1, IFNULL(c.s_score,0) score2
+FROM student a
+LEFT JOIN score b ON a.s_id = b.s_id AND b.c_id = '01'
+LEFT JOIN score c ON a.s_id = c.s_id AND c.c_id = '02'
+WHERE IFNULL(b.s_score,0) < IFNULL(c.s_score,0)
+################################
+SELECT 
+  b.*,
+  IFNULL(MAX(CASE WHEN a.c_id='01' THEN a.s_score END),0) AS s01,
+  IFNULL(MAX(CASE WHEN a.c_id='02' THEN a.s_score END),0) AS s02
+FROM score a
+RIGHT JOIN student b ON a.s_id = b.s_id
+GROUP BY a.s_id
+HAVING s01 < s02
 ```
 
 
@@ -206,6 +236,12 @@ union all
 select  s2.s_id,s2.s_name,0 as avgScore from student s2
 where s2.s_id not in
     (select distinct sc2.s_id from score sc2);
+################################
+SELECT a.s_id,a.s_name,IFNULL(ROUND(AVG(b.s_score),2),0) AS avg_score
+FROM student a
+LEFT JOIN score b ON a.s_id = b.s_id
+GROUP BY a.s_id,a.s_name
+HAVING IFNULL(avg_score,0) < 60
  ```
 
 
@@ -217,6 +253,13 @@ select student.s_id,student.s_name,(count(score.c_id) )as total_count,sum(score.
 from student
 left join score on student.s_id=score.s_id
 group by student.s_id,student.s_name ;
+```
+
+```sql
+SELECT a.s_id,a.s_name,COUNT(b.s_score) AS course_count,IFNULL(SUM(b.s_score),0) AS sum_score
+FROM student a
+LEFT JOIN score b ON a.s_id = b.s_id
+GROUP BY a.s_id,a.s_name
 ```
 
 
@@ -251,6 +294,16 @@ on  student.s_id =tmp.s_id
 where tmp.s_id is null;
 ```
 
+```sql
+SELECT * FROM student WHERE s_id NOT IN
+(
+SELECT a.s_id FROM student a
+INNER JOIN score b ON a.s_id = b.s_id 
+INNER JOIN course c ON b.c_id = c.c_id
+INNER JOIN teacher d ON c.t_id = d.t_id AND d.t_name = '张三'
+)
+```
+
 
 
 #### 9、查询学过编号为"01"并且也学过编号为"02"的课程的同学的信息
@@ -276,6 +329,36 @@ left join (select s_id from score where c_id =2 )tmp2
 where tmp2.s_id is null;
 ```
 
+```sql
+################
+SELECT a.* FROM student a
+WHERE a.s_id IN(SELECT b.s_id FROM score b WHERE b.c_id = '01')
+AND a.s_id NOT IN(SELECT c.s_id FROM score c WHERE c.c_id = '02')
+################
+SELECT 
+  b.*,
+  MAX(CASE WHEN a.c_id = '01' THEN s_score END) AS s01,
+  MAX(CASE WHEN a.c_id = '02' THEN s_score END) AS s02
+FROM score a
+RIGHT JOIN student b ON a.s_id = b.s_id
+GROUP BY a.s_id
+HAVING s01 IS NOT NULL AND s02 IS NULL
+################
+SELECT
+  a.*,b.s01,b.s02
+FROM student a
+JOIN(
+  SELECT 
+    s_id,
+    MAX(CASE WHEN c_id = '01' THEN s_score END) AS s01,
+    MAX(CASE WHEN c_id = '02' THEN s_score END) AS s02
+  FROM score
+  GROUP BY s_id
+  HAVING s01 IS NOT NULL AND s02 IS NULL
+  )b
+ON a.s_id = b.s_id
+```
+
 
 
 #### 11、查询没有学全所有课程的同学的信息 
@@ -296,13 +379,11 @@ where tmp.s_id is null;
 ```
 
 ```sql
-select student.* from student
-join (select count(c_id)num1 from course)tmp1
-left join(
-      select s_id,count(c_id)num2
-        from score group by s_id)tmp2
-on student.s_id=tmp2.s_id and tmp1.num1=tmp2.num2
-where tmp2.s_id is null;
+SELECT a.*,COUNT(b.c_id) AS cnt
+FROM student a
+LEFT JOIN score b ON a.s_id = b.s_id
+GROUP BY a.s_id
+HAVING cnt < (SELECT COUNT(c_id) FROM course)
 ```
 
 
@@ -318,20 +399,58 @@ where student.s_id  not in('01')
 group by student.s_id,s_name,s_birth,s_sex;
 ```
 
+```sql
+SELECT a.*
+FROM student a
+JOIN score b ON a.s_id = b.s_id
+WHERE b.c_id IN (SELECT c_id FROM score WHERE s_id = '01')
+AND a.s_id != '01'
+GROUP BY a.s_id
+```
+
 
 
 #### 13、查询和"01"号的同学学习的课程完全相同的其他同学的信息 
 
-备注:hive不支持group_concat方法,可用 concat_ws(’|’, collect_set(str)) 实现
+```sql
+SELECT * FROM student
+WHERE s_id != '01' AND s_id NOT IN 
+(
+  SELECT s_id FROM
+  (
+    SELECT a.s_id,b.c_id,c.c_id AS c_id2
+    FROM student a
+    INNER JOIN (SELECT c_id FROM score WHERE s_id = '01')b
+    LEFT JOIN score c ON a.s_id = c.s_id AND b.c_id = c.c_id
+
+    UNION
+
+    SELECT a.s_id,b.c_id,c.c_id AS c_id2
+    FROM student a
+    INNER JOIN (SELECT c_id FROM score WHERE s_id = '01')b
+    RIGHT JOIN score c ON a.s_id = c.s_id AND b.c_id = c.c_id
+  )t
+  WHERE c_id IS NULL OR c_id2 IS NULL
+)
+```
 
 ```sql
-select student.*,tmp1.course_id from student
-join (select s_id ,concat_ws('|', collect_set(c_id)) course_id from score
-      group by s_id having s_id not in (1))tmp1
-  on student.s_id = tmp1.s_id
-join (select concat_ws('|', collect_set(c_id)) course_id2
-            from score  where s_id=1)tmp2
-      on tmp1.course_id = tmp2.course_id2;
+WITH cte AS
+(
+  SELECT a.s_id,b.c_id,c.c_id AS c_id2
+  FROM student a
+  INNER JOIN (SELECT c_id FROM score WHERE s_id = '01')b
+  LEFT JOIN score c ON a.s_id = c.s_id AND b.c_id = c.c_id
+
+  UNION
+
+  SELECT a.s_id,b.c_id,c.c_id AS c_id2
+  FROM student a
+  INNER JOIN (SELECT c_id FROM score WHERE s_id = '01')b
+  RIGHT JOIN score c ON a.s_id = c.s_id AND b.c_id = c.c_id
+)
+SELECT * FROM student
+WHERE s_id != '01' AND s_id NOT IN (SELECT s_id FROM cte WHERE c_id IS NULL OR c_id2 IS NULL)
 ```
 
 
@@ -345,6 +464,37 @@ select student.* from student
           on score.c_id=tmp2.c_id )tmp
   on student.s_id = tmp.s_id
   where tmp.s_id is null;
+```
+
+```sql
+SELECT a.* 
+FROM student a
+LEFT JOIN (
+  SELECT s_id FROM score WHERE c_id IN (SELECT c_id FROM course WHERE t_id = (SELECT t_id FROM teacher WHERE t_name = '张三'))
+)b
+ON a.s_id = b.s_id
+WHERE b.s_id IS NULL
+```
+
+```sql
+SELECT a.* 
+FROM student a
+LEFT JOIN (
+  SELECT s_id FROM score c
+  JOIN course d ON c.c_id = d.c_id
+  JOIN teacher e ON d.t_id = e.t_id 
+  WHERE e.t_name = "张三"
+)b
+ON a.s_id = b.s_id
+WHERE b.s_id IS NULL
+```
+
+```sql
+SELECT a.s_id,a.s_name,AVG(b.s_score) AS avg_score
+FROM student a
+LEFT JOIN score b ON a.s_id = b.s_id
+GROUP BY a.s_id
+HAVING SUM(CASE WHEN b.s_score < 60 THEN 1 ELSE 0 END) >= 2
 ```
 
 
@@ -404,17 +554,60 @@ join(select c_id,max(s_score) as maxScore,min(s_score)as minScore,
 from score group by c_id)tmp on tmp.c_id=course.c_id;
 ```
 
+```sql
+SELECT 
+  b.c_id AS 课程ID,
+  b.c_name AS 课程name,
+  MAX(a.s_score) AS 最高分,
+  MIN(a.s_score) AS 最低分,
+  AVG(a.s_score) AS 平均分,
+  SUM(CASE WHEN a.s_score >= 60 THEN 1 ELSE 0 END)/COUNT(1) AS 及格率,
+  SUM(CASE WHEN a.s_score >= 70 AND a.s_score < 80 THEN 1 ELSE 0 END)/COUNT(1) AS 中等率,
+  SUM(CASE WHEN a.s_score >= 80 AND a.s_score < 90 THEN 1 ELSE 0 END)/COUNT(1) AS 优良率,
+  SUM(CASE WHEN a.s_score >= 90 THEN 1 ELSE 0 END)/COUNT(1) AS 优秀率
+FROM score a
+JOIN course b ON a.c_id = b.c_id
+GROUP BY a.c_id
+```
+
 
 
 #### 19、按各科成绩进行排序，并显示排名(实现不完全)
 
 ```sql
-select s1.*,row_number()over(order by s1.s_score desc) Ranking
-    from score s1 where s1.c_id='01'order by noRanking asc
-union all select s2.*,row_number()over(order by s2.s_score desc) Ranking
-    from score s2 where s2.c_id='02'order by noRanking asc
-union all select s3.*,row_number()over(order by s3.s_score desc) Ranking
-    from score s3 where s3.c_id='03'order by noRanking asc;
+SELECT 
+  a.*,
+  (SELECT COUNT(b.s_score) FROM score b WHERE a.c_id = b.c_id AND a.s_score < b.s_score)+1 AS rk,
+  (SELECT COUNT(DISTINCT b.s_score) FROM score b WHERE a.c_id = b.c_id AND a.s_score <= b.s_score) AS dense_rk
+FROM score a
+ORDER BY a.c_id,a.s_score DESC
+```
+
+```sql
+SELECT s_id,c_id,s_score,rk,dense_rk,row_num
+FROM
+  (
+  SELECT 
+    a.*,
+    @r:=(CASE WHEN @c=a.c_id THEN IF(@s=a.s_score,@r,@row+1) ELSE 1 END) AS rk,
+    @dr:=(CASE WHEN @c=a.c_id THEN IF(@s>a.s_score,@dr+1,@dr) ELSE 1 END) AS dense_rk,
+    @row:=(CASE WHEN @c=a.c_id THEN @row+1 ELSE 1 END) AS row_num,
+    @c:=a.c_id,
+    @s:=a.s_score
+  FROM score a,(SELECT @r:=0,@dr:=0,@row:=0,@c:=NULL,@s:=NULL) t
+ORDER BY a.c_id,a.s_score DESC
+)t
+```
+
+```sql
+SELECT 
+  a.*,
+  RANK() over w AS rk,
+  DENSE_RANK() over w AS dense_rk,
+  ROW_NUMBER() over w AS row_num
+FROM score a
+WINDOW w AS (PARTITION BY a.c_id ORDER BY a.s_score DESC)
+ORDER BY a.c_id,a.s_score DESC
 ```
 
 
@@ -461,7 +654,36 @@ union all select tmp3.* from
     order by s_score asc limit 2;
 ```
 
- 
+ ```sql
+SELECT a.*,b.c_id,b.s_score,b.rank
+FROM student a
+JOIN
+  (
+  SELECT score.*,IF(@p=c_id,@r:=@r+1,@r:=1) AS 'rank',@p:=c_id
+  FROM score
+  JOIN (SELECT @p:=NULL,@r:=0)t
+  ORDER BY c_id,s_score DESC
+  )b
+ON a.s_id = b.s_id
+WHERE b.rank BETWEEN 2 AND 3
+ORDER BY b.c_id,b.rank
+ ```
+
+```sql
+SELECT *
+FROM
+  (
+  SELECT a.*,b.c_id,b.s_score,rank() over w AS 'rank'
+  FROM student a
+  RIGHT JOIN score b
+  ON a.s_id = b.s_id
+  WINDOW w AS (PARTITION BY c_id ORDER BY b.c_id,b.s_score DESC,a.s_id)
+  ORDER BY b.c_id,'rank'
+)t
+WHERE t.rank BETWEEN 2 AND 3
+```
+
+
 
 #### 23、统计各科成绩各分数段人数：课程编号,课程名称,[100-85],[85-70],[70-60],[0-60]及所占百分比
 
@@ -482,6 +704,104 @@ left join(select c_id,sum(case when s_score>=85 then 1 else 0 end )as s85_100,
      from score group by c_id)tmp4 on tmp4.c_id =c.c_id;
 ```
 
+```sql
+SELECT 
+  t.c_id,
+  t.c_name,
+  a.count_85_100,
+  a.count_85_100/a.total_85_100 AS percent_85_100,
+  b.count_70_85,
+  b.count_70_85/b.total_70_85 AS percent_70_85,
+  c.count_60_70,
+  c.count_60_70/c.total_60_70 AS percent_60_70,
+  d.count_0_60,
+  d.count_0_60/d.total_0_60 AS percent_0_60
+FROM course t
+JOIN (
+      SELECT 
+        c_id,
+        SUM(CASE WHEN s_score BETWEEN 85 AND 100 THEN 1 ELSE 0 END) AS count_85_100,
+        COUNT(c_id) AS total_85_100 
+      FROM score 
+      GROUP BY c_id
+      ) AS a 
+ON t.c_id = a.c_id
+JOIN (
+      SELECT 
+        c_id,
+        SUM(CASE WHEN s_score BETWEEN 70 AND 85 THEN 1 ELSE 0 END) AS count_70_85,
+        COUNT(c_id) AS total_70_85
+      FROM score 
+      GROUP BY c_id
+      ) AS b 
+ON t.c_id = b.c_id
+JOIN (
+      SELECT 
+        c_id,
+        SUM(CASE WHEN s_score BETWEEN 60 AND 70 THEN 1 ELSE 0 END) AS count_60_70,
+        COUNT(c_id) AS total_60_70
+      FROM score 
+      GROUP BY c_id
+      ) AS c 
+ON t.c_id = c.c_id
+JOIN (
+      SELECT 
+        c_id,
+        SUM(CASE WHEN s_score <= 60 THEN 1 ELSE 0 END) AS count_0_60,
+        COUNT(c_id) AS total_0_60
+      FROM score 
+      GROUP BY c_id
+      ) AS d 
+ON t.c_id = d.c_id
+```
+
+```sql
+SELECT 
+  c_id,
+  c_name,
+  count_85_100,
+  count_85_100/total AS percent_85_100,
+  count_70_85,
+  count_70_85/total AS percent_70_85,
+  count_60_70,
+  count_60_70/total AS percent_60_70,
+  count_0_60,
+  count_0_60/total AS percent_0_60
+FROM(
+  SELECT 
+    a.c_id,
+    a.c_name,
+    SUM(CASE WHEN b.s_score BETWEEN 85 AND 100 THEN 1 ELSE 0 END) over w AS count_85_100,
+    SUM(CASE WHEN b.s_score BETWEEN 70 AND 85 THEN 1 ELSE 0 END) over w AS count_70_85,
+    SUM(CASE WHEN b.s_score BETWEEN 60 AND 70 THEN 1 ELSE 0 END) over w AS count_60_70,
+    SUM(CASE WHEN b.s_score <= 60 THEN 1 ELSE 0 END) over w AS count_0_60,
+    COUNT(b.c_id) over w AS total
+  FROM course a
+  JOIN score b
+  ON a.c_id = b.c_id
+  WINDOW w AS (PARTITION BY a.c_id)
+)t
+GROUP BY c_id
+```
+
+```sql
+SELECT 
+  a.c_id,
+  a.c_name,
+  SUM(CASE WHEN b.s_score BETWEEN 85 AND 100 THEN 1 ELSE 0 END) AS '[100-85]',
+  SUM(CASE WHEN b.s_score BETWEEN 70 AND 85 THEN 1 ELSE 0 END) AS '[85-70]',
+  SUM(CASE WHEN b.s_score BETWEEN 60 AND 70 THEN 1 ELSE 0 END) AS '[70-60]',
+  SUM(CASE WHEN b.s_score <= 60 THEN 1 ELSE 0 END) AS '[0-60]',
+  SUM(CASE WHEN b.s_score BETWEEN 85 AND 100 THEN 1 ELSE 0 END)/COUNT(1) AS '[100-85]%',
+  SUM(CASE WHEN b.s_score BETWEEN 70 AND 85 THEN 1 ELSE 0 END)/COUNT(1) AS '[85-70]%',
+  SUM(CASE WHEN b.s_score BETWEEN 60 AND 70 THEN 1 ELSE 0 END)/COUNT(1) AS '[70-60]%',
+  SUM(CASE WHEN b.s_score <= 60 THEN 1 ELSE 0 END)/COUNT(1) AS '[0-60]%'
+FROM course a
+JOIN score b
+ON a.c_id = b.c_id
+GROUP BY a.c_id,a.c_name
+```
+
 
 
 #### 24、查询学生平均成绩及其名次 
@@ -495,6 +815,15 @@ select tmp.*,row_number()over(order by tmp.avgScore desc) Ranking from
   on student.s_id=score.s_id
   group by student.s_id,student.s_name)tmp
 order by avgScore desc;
+```
+
+```sql
+SELECT a.s_id,b.s_name,AVG(a.s_score) AS avg_score,rank() over w AS 'rank'
+FROM score a
+JOIN student b ON a.s_id = b.s_id
+GROUP BY a.s_id
+WINDOW w AS (ORDER BY AVG(a.s_score) DESC)
+ORDER BY avg_score DESC
 ```
 
 
@@ -524,15 +853,25 @@ join course on  score.c_id='03' and course.c_id=score.c_id
 order by s_score desc limit 3;
 ```
 
+```sql
+SELECT * FROM
+(
+  SELECT *,rank() over(PARTITION BY c_id ORDER BY s_score DESC) AS 'rank'
+  FROM score 
+  ORDER BY c_id,s_score DESC
+)t
+WHERE t.rank <= 3
+```
+
 
 
 #### 26、查询每门课程被选修的学生数 
 
 ```sql
-select c.c_id,c.c_name,tmp.number from course c
-    join (select c_id,count(1) as number from score
-        where score.s_score<60 group by score.c_id)tmp
-    on tmp.c_id=c.c_id;
+SELECT a.c_id,a.c_name,COUNT(s_id) AS cnt
+FROM course a
+LEFT JOIN score b ON a.c_id = b.c_id
+GROUP BY a.c_id
 ```
 
 
@@ -545,6 +884,15 @@ select st.s_id,st.s_name from student st
     on st.s_id=tmp.s_id;
 ```
 
+```sql
+SELECT a.*
+FROM student a
+JOIN score b
+ON a.s_id = b.s_id
+GROUP BY s_id
+HAVING COUNT(b.c_id) = 2 
+```
+
 
 
 #### 28、查询男生、女生人数 
@@ -553,6 +901,10 @@ select st.s_id,st.s_name from student st
 select tmp1.man,tmp2.women from
     (select count(1) as man from student where s_sex='男')tmp1,
     (select count(1) as women from student where s_sex='女')tmp2;
+```
+
+```sql
+SELECT s_sex,COUNT(1) AS s_count FROM student GROUP BY s_sex
 ```
 
 
@@ -574,11 +926,22 @@ where s1.s_name=s2.s_name and s1.s_id<>s2.s_id and s1.s_sex=s2.s_sex
 group by s1.s_id,s1.s_name,s1.s_sex;
 ```
 
- 
+ ```sql
+SELECT s_id,s_name,s_sex,COUNT(s_name) AS cnt 
+FROM student
+GROUP BY s_name,s_sex
+HAVING cnt>1
+ ```
+
+
 
 #### 31、查询1990年出生的学生名单
 ```sql
 select * from student where s_birth like '1990%';
+```
+
+```sql
+SELECT * FROM student WHERE YEAR(s_birth) = 1990
 ```
 
 
@@ -599,6 +962,14 @@ select score.c_id,c_name,round(avg(s_score),2) as avgScore from score
 select score.s_id,s_name,round(avg(s_score),2)as avgScore from score
     join student on student.s_id=score.s_id
     group by score.s_id,s_name having avg(s_score) >= 85;
+```
+
+```sql
+SELECT a.s_id,a.s_name,AVG(b.s_score) AS avg_score
+FROM student a
+JOIN score b ON a.s_id = b.s_id
+GROUP BY a.s_id
+HAVING IFNULL(avg_score,0) >= 85
 ```
 
 
@@ -629,6 +1000,13 @@ select a.s_name,
     group by s_name,a.s_id;
 ```
 
+```sql
+SELECT a.s_id,a.s_name,c.c_name,b.s_score
+FROM student a
+LEFT JOIN score b ON a.s_id = b.s_id
+LEFT JOIN course c ON b.c_id = c.c_id
+```
+
 
 
 #### 36、查询任何一门课程成绩在70分以上的姓名、课程名称和分数； 
@@ -654,6 +1032,13 @@ where sc.s_id not in (select s_id from score where s_score < 60 group by s_id);
 
 ```
 
+```sql
+SELECT a.s_id,a.s_name,c.c_name,b.s_score
+FROM student a
+JOIN score b ON a.s_id = b.s_id AND b.s_score >= 70
+JOIN course c ON b.c_id = c.c_id
+```
+
 
 
 #### 37、查询不及格的课程
@@ -665,6 +1050,13 @@ join (select s_id,s_score,c_name
       from score,course
       where score.c_id=course.c_id and s_score < 60)tmp
 on student.s_id=tmp.s_id;
+```
+
+```sql
+SELECT a.s_name,c.c_name,b.s_score
+FROM student a
+JOIN score b ON a.s_id = b.s_id AND b.s_score < 60
+JOIN course c ON b.c_id = c.c_id
 ```
 
 
@@ -705,6 +1097,17 @@ join student
 on student.s_id=tmp3.s_id;
 ```
 
+```sql
+SELECT a.*,b.s_score
+FROM student a
+JOIN score b ON a.s_id = b.s_id
+JOIN course c ON b.c_id = c.c_id
+JOIN teacher d ON c.t_id = d.t_id AND d.t_name = '张三'
+ORDER BY b.s_score DESC
+LIMIT 1
+```
+
+
 
 #### 41、查询不同课程成绩相同的学生的学生编号、课程编号、学生成绩 
 
@@ -734,6 +1137,20 @@ select tmp3.* from
 where tmp3.ranking <= 3;
 ```
 
+```sql
+SELECT a.c_id,a.c_name,c.s_id,c.s_name,b.s_score,b.row_rank
+FROM course a
+JOIN (
+  SELECT c_id,s_id,s_score,ROW_NUMBER() over(PARTITION BY c_id ORDER BY s_score DESC) AS row_rank
+  FROM score
+  ORDER BY c_id,row_rank
+  ) b 
+ON a.c_id = b.c_id AND b.row_rank <= 3
+JOIN student c 
+ON b.s_id = c.s_id
+ORDER BY a.c_id
+```
+
 
 
 #### 43、统计每门课程的学生选修人数（超过5人的课程才统计）。要求输出课程号和选修人数，查询结果按人数降序排列，若人数相同，按课程号升序排列  
@@ -742,6 +1159,15 @@ where tmp3.ranking <= 3;
 select distinct course.c_id,tmp.num from course
     join (select c_id,count(1) as num from score group by c_id)tmp
     where tmp.num>=5 order by tmp.num desc ,course.c_id asc;
+```
+
+```sql
+SELECT a.c_id,a.c_name,COUNT(b.s_id) AS st_count 
+FROM course a
+JOIN score b ON a.c_id = b.c_id
+GROUP BY a.c_id
+HAVING st_count >= 5
+ORDER BY st_count DESC,a.c_id ASC
 ```
 
 
@@ -792,7 +1218,7 @@ from student;
 
 #### 47、查询本周过生日的学生
 ```sql
-select * from student where weekofyear(CURRENT_DATE)+1 =weekofyear(s_birth);
+select * from student where weekofyear(CURRENT_DATE)=weekofyear(s_birth);
 ```
 
 ```sql

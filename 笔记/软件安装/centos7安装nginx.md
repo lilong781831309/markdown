@@ -208,11 +208,10 @@ vim /opt/module/nginx/conf/nginx.conf
 user  nginx nginx;
 worker_processes  1;
 
-#error_log  logs/error.log;
-#error_log  logs/error.log  notice;
-#error_log  logs/error.log  info;
+# debug > info > notice > warn > error > crit > alert > emerg
+error_log  /logs/nginx/error.log  error; 
 
-#pid        logs/nginx.pid;
+pid         /tmp/nginx.pid;
 load_module "modules/ngx_http_geoip_module.so";
 load_module "modules/ngx_http_image_filter_module.so";
 load_module "modules/ngx_http_perl_module.so";
@@ -228,27 +227,39 @@ http {
     include       mime.types;
     default_type  application/octet-stream;
 
-    #log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
-    #                  '$status $body_bytes_sent "$http_referer" '
-    #                  '"$http_user_agent" "$http_x_forwarded_for"';
+    log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                      '$status $body_bytes_sent "$http_referer" '
+                      '"$http_user_agent" "$http_x_forwarded_for"';
 
-    #access_log  logs/access.log  main;
+    log_format  logstash_json '{"@timestamp":"$time_iso8601",'
+       '"host": "$server_addr",'
+       '"client": "$remote_addr",'
+       '"size": $body_bytes_sent,'
+       '"responsetime": $request_time,'
+       '"domain": "$host",'
+       '"url":"$request_uri",'
+       '"referer": "$http_referer",'
+       '"agent": "$http_user_agent",'
+       '"status":"$status",'
+       '"x_forwarded_for":"$http_x_forwarded_for"}';
+
+    access_log   /logs/nginx/access.log  main; 
 
     sendfile        on;
     #tcp_nopush     on;
 
-    #keepalive_timeout  0;
     keepalive_timeout  65;
 
     gzip  on;
+    
+    charset utf8;
 
     server {
         listen       80;
         server_name  localhost;
 
-        #charset koi8-r;
-
-        #access_log  logs/host.access.log  main;
+        access_log  /logs/nginx/localhost.access.log  main;
+        error_log   /logs/nginx/localhost.error.log   error;
 
         location / {
             root   html;
